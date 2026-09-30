@@ -267,7 +267,9 @@ def portfolio(sims, keys, n=A.N_SIMS, seed=A.SEED):
         # не запущенная инициатива: выручки нет, но 50% затрат на разработку уже потрачено
         rev += s["rev"] * launched
         rev_ext += s["rev_ext"] * launched
-        contrib += s["contrib"] * launched
+        # перекрытие режет маржу от выручки, но не затраты: вклад = маржа·(1−h) − затраты
+        gross_margin = s["contrib"] + s["cost"]
+        contrib += (gross_margin * (1 - haircut) - s["cost"]) * launched
         contrib[0] -= 0.5 * s["pre_launch_cost"] * (~launched)
         dsubs += s["dsubs"] * launched
         dsubs_ext += s["dsubs_ext"] * launched
@@ -283,7 +285,7 @@ def portfolio(sims, keys, n=A.N_SIMS, seed=A.SEED):
     rev_y2 = rev[12:].sum(0) + rev_ext[12:].sum(0)
     run_rate = (rev[H - 1] + rev_ext[H - 1]) * 12
     share_pp = (dsubs[H - 1] + dsubs_ext[H - 1]) / A.BASE["market_total_subs"] * 100
-    c24 = contrib.sum(0) - haircut * np.maximum(contrib.sum(0), 0)
+    c24 = contrib.sum(0)
     fx = A.FX_UZS_PER_USD
     return {
         "keys": keys,
@@ -345,11 +347,12 @@ def main():
         d = det[r["key"]]
         r["det_contrib_24_bn"] = float(d["contrib"].sum()) / 1e9
         r["det_rev_y1_bn"] = float(d["rev"][:12].sum() + d["rev_ext"][:12].sum()) / 1e9
-    core = [k for k in keys if not A.INITIATIVES[k].get("optional")]
+    core = [k for k in keys if not A.INITIATIVES[k].get("optional")
+            and not A.INITIATIVES[k].get("not_recommended")]
     easy = [k for k in core if A.INITIATIVES[k]["group"] == "EASY"]
     hard = [k for k in core if A.INITIATIVES[k]["group"] == "HARD"]
     port_all = portfolio(sims, core)
-    port_stretch = portfolio(sims, keys)
+    port_stretch = portfolio(sims, [k for k in keys if not A.INITIATIVES[k].get("not_recommended")])
     port_easy = portfolio(sims, easy)
     port_hard = portfolio(sims, hard)
     torn = [tornado("A1"), tornado("A2"), tornado("B1")]
@@ -407,7 +410,7 @@ def main():
             f"{r['p_contrib_positive']*100:.0f}% | {r['exec_prob']*100:.0f}% | "
             f"**{r['success_chance']*100:.0f}%** | {r['business_case_chance']*100:.0f}% |")
     L.append("")
-    for title, pr in (("Базовый (все, кроме опций)", port_all), ("Только EASY", port_easy),
+    for title, pr in (("Базовый (рекомендуемый: без опции A8 и без B4)", port_all), ("Только EASY", port_easy),
                       ("Только HARD", port_hard), ("Stretch = базовый + A8 (индексация, волна 2)", port_stretch)):
         L.append(f"## Портфель: {title}\n")
         L.append(f"- ΔARPU когорты, мес 12: **{fmt_rng([x*100 for x in pr['arpu_uplift_m12']], '{:.1f}%')}**")

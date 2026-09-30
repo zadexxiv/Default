@@ -168,7 +168,7 @@ PARAMS = [
     ("Группа (EASY/HARD)", "group", None),
     ("Тип механики", "type", None),
     ("Сложность биллинг/интеграции (1–5)", "complexity", NUM),
-    ("Опция вне базового портфеля (1=да)", "optional", NUM),
+    ("Портфель: 1 = базовый, 2 = опция (Stretch), 0 = не рекомендуется", "portfolio", NUM),
     ("ARPU целевого сегмента, сум", "segment_arpu", NUM),
     ("Доля целевой группы от когорты", "eligible_share", PCT),
     ("Охват коммуникацией", "reach", PCT),
@@ -262,8 +262,8 @@ def build():
         wn.cell(row=r, column=2, value=key)
         for j, k in enumerate(keys, 3):
             p = A.INITIATIVES[k]
-            if key == "optional":
-                v = 1 if p.get("optional") else 0
+            if key == "portfolio":
+                v = 0 if p.get("not_recommended") else (2 if p.get("optional") else 1)
             elif key == "adopter_decay_6m":
                 v = mode(p.get(key, 1))
             elif key in ("name", "group", "type"):
@@ -367,7 +367,7 @@ def build():
 
     # портфель: итоговые строки
     first, last = mcol(1), mcol(H)
-    wm.cell(row=r, column=1, value="ПОРТФЕЛЬ (детерминированный, все инициативы запущены)").font = BOLD
+    wm.cell(row=r, column=1, value="ПОРТФЕЛЬ (детерминированный, все рекомендуемые инициативы запущены)").font = BOLD
     for c in range(1, MONTH_COL0 + H):
         wm.cell(row=r, column=c).fill = SEC_FILL
     r += 1
@@ -399,10 +399,11 @@ def build():
             for k in keys:
                 jcol = get_column_letter(3 + keys.index(k))
                 ref = f"{X}{brow[(k, item)]}"
+                flag = f"Initiatives!${jcol}${rowof['portfolio']}"
                 if scope == "core":
-                    terms.append(f"{ref}*(1-Initiatives!${jcol}${rowof['optional']})")
+                    terms.append(f"{ref}*({flag}=1)")
                 else:
-                    terms.append(ref)
+                    terms.append(f"{ref}*({flag}>=1)")
             put(wm, prow[key], cidx, "=" + "+".join(terms), fmt=NUM)
         put(wm, prow["core_arpu"], cidx,
             f"=({X}$5+{X}{prow['core_rev']}*(1-{HC}))/({X}$4+{X}{prow['core_dsubs']}*(1-{HC}))", fmt=NUM)
@@ -479,14 +480,14 @@ def build():
     wp["A3"] = "Перекрытие эффектов (haircut)"
     put(wp, 3, 3, mode(A.PORTFOLIO_OVERLAP_HAIRCUT), BLUE, PCT, YELLOW)
     wp["D3"] = "Доля эффекта, «съедаемая» пересечением целевых групп (одни и те же абоненты в нескольких инициативах)"
-    hdr = ["#", "Инициатива", "Группа", "Опция", "Выручка Y1", "Выручка Y2", "Run-rate/год", "Вклад 24 мес",
-           "ROI", "ΔARPU (мес. оценки)", "Δ доли, п.п.", "P(запуска)", "Ожид. вклад"]
+    hdr = ["#", "Инициатива", "Группа", "Портфель (1/2/0)", "Выручка Y1", "Выручка Y2", "Run-rate/год", "Вклад 24 мес",
+           "Затраты 24 мес", "ROI", "ΔARPU (мес. оценки)", "Δ доли, п.п.", "P(запуска)", "Ожид. вклад"]
     for j, h in enumerate(hdr, 1):
         wp.cell(row=5, column=j, value=h)
     style_header(wp, 5, len(hdr))
-    src = ["key", "name", "group", "optional", "rev1", "rev2", "runrate", "contrib24", "roi", "upl_eval",
+    src = ["key", "name", "group", "portfolio", "rev1", "rev2", "runrate", "contrib24", "cost24", "roi", "upl_eval",
            "dshare", "exec_prob", "exp_contrib"]
-    fmts = [None, None, None, NUM, NUM, NUM, NUM, NUM, MULT, PCT2, NUM3, PCT, NUM]
+    fmts = [None, None, None, NUM, NUM, NUM, NUM, NUM, NUM, MULT, PCT2, NUM3, PCT, NUM]
     for i, k in enumerate(keys, 6):
         jcol = get_column_letter(3 + keys.index(k))
         for j, (s, f_) in enumerate(zip(src, fmts), 1):
@@ -499,14 +500,15 @@ def build():
     wp.cell(row=s0, column=1, value="Итоги портфеля").font = BOLD
     lines = [
         ("Базовый: выручка Y1 после перекрытия, сум",
-         f"=SUMIFS(E6:E{lastr},$D$6:$D${lastr},0)*(1-$C$3)", NUM),
+         f"=SUMIFS(E6:E{lastr},$D$6:$D${lastr},1)*(1-$C$3)", NUM),
         ("Базовый: выручка Y2 после перекрытия, сум",
-         f"=SUMIFS(F6:F{lastr},$D$6:$D${lastr},0)*(1-$C$3)", NUM),
+         f"=SUMIFS(F6:F{lastr},$D$6:$D${lastr},1)*(1-$C$3)", NUM),
         ("Базовый: run-rate/год на мес. 24 после перекрытия, сум",
-         f"=SUMIFS(G6:G{lastr},$D$6:$D${lastr},0)*(1-$C$3)", NUM),
+         f"=SUMIFS(G6:G{lastr},$D$6:$D${lastr},1)*(1-$C$3)", NUM),
         ("Базовый: run-rate/год, USD", f"=C{s0+3}/{FX}", '"$"#,##0'),
-        ("Базовый: вклад 24 мес. (перекрытие снижает положительный вклад)",
-         f"=SUMIFS(H6:H{lastr},$D$6:$D${lastr},0)-$C$3*MAX(SUMIFS(H6:H{lastr},$D$6:$D${lastr},0),0)", NUM),
+        ("Базовый: вклад 24 мес. = маржа × (1 − перекрытие) − затраты",
+         f"=(SUMIFS(H6:H{lastr},$D$6:$D${lastr},1)+SUMIFS(I6:I{lastr},$D$6:$D${lastr},1))*(1-$C$3)"
+         f"-SUMIFS(I6:I{lastr},$D$6:$D${lastr},1)", NUM),
         ("Базовый: ARPU когорты до, сум", f"={ARPU0}", NUM),
         ("Базовый: ARPU когорты на мес. 12, сум", f"=Monthly!{mcol(12)}{prow['core_arpu']}", NUM),
         ("Базовый: ARPU когорты на мес. 24, сум", f"=Monthly!{last}{prow['core_arpu']}", NUM),
@@ -516,7 +518,7 @@ def build():
         ("Базовый: прирост выручки когорты (run-rate), % к базе",
          f"=IF(Inputs!C13>0,C{s0+3}/(Inputs!C13*12),0)", PCT),
         ("Базовый: Δ доли рынка к мес. 24, п.п.",
-         f"=SUMIFS(K6:K{lastr},$D$6:$D${lastr},0)*(1-$C$3)", NUM3),
+         f"=SUMIFS(L6:L{lastr},$D$6:$D${lastr},1)*(1-$C$3)", NUM3),
     ]
     for i, (lab, f_, fm) in enumerate(lines, s0 + 1):
         wp.cell(row=i, column=1, value=lab)
