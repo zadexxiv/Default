@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ucell Club — прототип MVP</title>
+<style>
+  :root {
+    --bg: #f4f2fa; --card: #ffffff; --ink: #1d1638; --muted: #5f5a75; --line: #e4e0f0;
+    --brand: #5b2bb5; --brand-ink: #ffffff; --accent: #c2571a; --good: #1f7a4d; --chip: #efe9fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14111f; --card: #1f1a30; --ink: #f1eefb; --muted: #b3aac9; --line: #332c4a;
+            --brand: #8f63e8; --brand-ink: #14111f; --accent: #f2a76b; --good: #6fd3a0; --chip: #2a2340; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  .app { max-width: 420px; margin: 0 auto; min-height: 100vh; padding: 16px 16px 96px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  h1 { font-size: 20px; margin: 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-top: 14px; }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+  .chip { background: var(--chip); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+  .big { font-size: 28px; font-weight: 700; }
+  button { font: inherit; cursor: pointer; border-radius: 12px; border: 1px solid var(--line);
+           background: var(--card); color: var(--ink); padding: 10px 14px; }
+  button.primary { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); font-weight: 600; }
+  button:disabled { opacity: .55; cursor: default; }
+  .chest-wrap { display: grid; place-items: center; padding: 8px 0 4px; }
+  .chest { width: 180px; height: 150px; border: none; background: none; padding: 0; position: relative; }
+  .chest svg { width: 180px; height: 150px; transition: transform .12s; }
+  .chest.shake svg { animation: shake .25s; }
+  @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 50%{transform:rotate(6deg)} 75%{transform:rotate(-3deg)} 100%{transform:rotate(0)} }
+  .taps { display: flex; gap: 6px; justify-content: center; margin-top: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+  .dot.on { background: var(--accent); }
+  .prize { text-align: center; padding: 12px; border-radius: 12px; background: var(--chip); margin-top: 10px; }
+  .prize b { font-size: 20px; display: block; }
+  nav { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+        display: flex; justify-content: center; }
+  nav .inner { display: grid; grid-template-columns: repeat(4, 1fr); max-width: 420px; width: 100%; }
+  nav button { border: none; border-radius: 0; background: none; padding: 12px 4px; font-size: 13px; color: var(--muted); }
+  nav button[aria-selected="true"] { color: var(--brand); font-weight: 700; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list li:last-child { border-bottom: none; }
+  .ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+  .ladder div { text-align: center; padding: 8px 4px; border-radius: 10px; background: var(--chip); font-size: 12px; }
+  .ladder div.me { outline: 2px solid var(--brand); font-weight: 700; }
+  select { font: inherit; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .hidden { display: none; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--good); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Ucell Club</h1>
+      <div class="muted">Прототип MVP для юзабилити-тестов</div>
+    </div>
+    <div style="text-align:right">
+      <div class="chip" id="coinsChip">0 монет</div>
+      <div class="muted" id="streakTxt" style="margin-top:4px">Серия: 0 дн.</div>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <label for="band" class="muted">Тестовый профиль (абонплата)</label>
+      <select id="band">
+        <option value="0">до 30 тыс. (архивный ТП)</option>
+        <option value="1">30–59 тыс.</option>
+        <option value="2">60–79 тыс.</option>
+        <option value="3">от 80 тыс.</option>
+        <option value="4">Club+ Pass (9 999 сум)</option>
+      </select>
+    </div>
+    <label class="row" style="margin-top:10px"><span class="muted">Оплата вовремя в этом месяце</span>
+      <input type="checkbox" id="ontime" checked></label>
+  </div>
+
+  <!-- TAB: chest -->
+  <section id="tab-chest">
+    <div class="card">
+      <div class="row"><b>Сундук дня</b><span class="chip" id="dayTheme"></span></div>
+      <div class="chest-wrap">
+        <button class="chest" id="chest" aria-label="Открыть сундук: нажмите несколько раз">
+          <svg viewBox="0 0 180 150" aria-hidden="true">
+            <rect x="20" y="60" width="140" height="80" rx="10" fill="#8a5a2b"/>
+            <rect x="20" y="60" width="140" height="18" fill="#6e4520"/>
+            <path id="lid" d="M20 62 Q90 0 160 62 Z" fill="#a8703a"/>
+            <rect x="80" y="70" width="20" height="26" rx="4" fill="#e8c547"/>
+            <rect x="20" y="96" width="140" height="8" fill="#e8c547" opacity=".8"/>
+          </svg>
+        </button>
+      </div>
+      <div class="taps" id="taps" aria-hidden="true"></div>
+      <p class="muted" id="chestHint" style="text-align:center;margin:8px 0 0">Нажмите на сундук 4 раза</p>
+      <div class="prize hidden" id="prizeBox" role="status" aria-live="polite"></div>
+      <div class="row" style="margin-top:12px">
+        <span class="note">В каждом сундуке есть приз — пустых не бывает.</span>
+        <button id="resetDay" title="Только для теста">Новый день ▸</button>
+      </div>
+    </div>
+    <div class="card">
+      <b>Серия 7 дней = +1 шанс в Weekly Wins</b>
+      <div class="bar" style="margin-top:10px"><i id="streakBar" style="width:0%"></i></div>
+      <div class="note" id="streakNote"></div>
+    </div>
+  </section>
+
+  <!-- TAB: wallet -->
+  <section id="tab-wallet" class="hidden">
+    <div class="card">
+      <div class="muted">Баланс</div>
+      <div class="big" id="walletCoins">0</div>
+      <div class="note">1 монета = 1 сум · монеты живут 12 месяцев</div>
+      <div class="note" id="cashbackNote"></div>
+    </div>
+    <div class="card">
+      <b>Потратить</b>
+      <ul class="list" id="spendList"></ul>
+      <div class="note" id="spendMsg" role="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- TAB: wins -->
+  <section id="tab-wins" class="hidden">
+    <div class="card">
+      <div class="row"><b>Weekly Wins</b><span class="chip" id="countdown"></span></div>
+      <div style="margin-top:8px">Ваши шансы на этой неделе: <b id="myEntries">0</b></div>
+      <div class="ladder" id="ladder"></div>
+      <div class="note" id="entriesNote"></div>
+      <ul class="list" style="margin-top:8px">
+        <li><span>iPhone 17</span><span class="muted">1 шт.</span></li>
+        <li><span>Планшеты · AirPods</span><span class="muted">2 · 5 шт.</span></li>
+        <li><span>Концерты · кино (пары билетов)</span><span class="muted">10 · 30</span></li>
+        <li><span>5 ГБ интернета</span><span class="muted">1 000 шт.</span></li>
+        <li><span>Ваучеры партнёров</span><span class="muted">300 шт.</span></li>
+        <li><span>Premium-пул (от 80 тыс.)</span><span class="muted">Galaxy A + 5 JBL</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <b>Розыгрыш месяца — прямой эфир</b>
+      <p style="margin:6px 0">Chevrolet Onix · Instagram / Telegram live, нотариус, публичный seed.</p>
+      <div class="note">Условие: 4 недели оплаты вовремя подряд. Как получить больше шансов: серия 7 дней (+1), стаж (+1 за каждые 5 лет), переход на тариф от 60 тыс. (+10 разово).</div>
+    </div>
+  </section>
+
+  <!-- TAB: partners -->
+  <section id="tab-partners" class="hidden">
+    <div class="card">
+      <b>Предложения партнёров</b>
+      <ul class="list" id="partnerList"></ul>
+      <div class="note">Кассир вводит одноразовый код в Telegram-бот партнёра — интеграция не нужна.</div>
+    </div>
+  </section>
+</div>
+
+<nav aria-label="Разделы">
+  <div class="inner" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="chest">Сундук</button>
+    <button role="tab" aria-selected="false" data-tab="wallet">Монеты</button>
+    <button role="tab" aria-selected="false" data-tab="wins">Розыгрыши</button>
+    <button role="tab" aria-selected="false" data-tab="partners">Партнёры</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  "use strict";
+  // Таблица сундука = v2/model/assumptions_v2.py: DROP_TABLE
+  var DROPS = [
+    { p: 0.50, title: function () { var c = 30 + Math.floor(Math.random() * 71); return { t: c + " монет", coins: c }; } },
+    { p: 0.25, title: function () { var mb = [300, 500, 1000][Math.floor(Math.random() * 3)]; return { t: (mb >= 1000 ? "1 ГБ" : mb + " МБ") + " интернета" }; } },
+    { p: 0.07, title: function () { return { t: "Безлимит мессенджеров на сутки" }; } },
+    { p: 0.14, title: function () { return { t: "Купон партнёра −20%", coupon: true }; } },
+    { p: 0.02, title: function () { return { t: "Жетон: +1 шанс в Weekly Wins", entry: 1 }; } },
+    { p: 0.02, title: function () { var inv = ["2 билета в кино", "Худи Ucell Club", "Power bank", "Наушники JBL"]; return { t: inv[Math.floor(Math.random() * inv.length)] + " (из недельного лимита)" }; } }
+  ];
+  var BANDS = [
+    { name: "до 30 тыс.", fee: 22000, cb: 0.03, entries: 1 },
+    { name: "30–59 тыс.", fee: 45000, cb: 0.03, entries: 2 },
+    { name: "60–79 тыс.", fee: 70000, cb: 0.04, entries: 3 },
+    { name: "от 80 тыс.", fee: 100000, cb: 0.05, entries: 5 },
+    { name: "Club+ Pass", fee: 22000, cb: 0.045, entries: 3 }
+  ];
+  var THEMES = ["Монеты ×2", "День интернета", "Партнёрский день", "Кино-четверг", "Мерч-дроп", "Развлечения", "Бонус серии"];
+  var TAPS = 4;
+
+  // состояние (localStorage — только удобство; без него всё работает)
+  var S = { coins: 0, streak: 0, opened: false, bonusEntries: 0, taps: 0 };
+  function load() { try { var raw = localStorage.getItem("ucellClubProto"); if (raw) { var o = JSON.parse(raw); for (var k in o) S[k] = o[k]; } } catch (e) {} }
+  function save() { try { localStorage.setItem("ucellClubProto", JSON.stringify(S)); } catch (e) {} }
+
+  var $ = function (id) { return document.getElementById(id); };
+  function fmt(n) { return Math.round(n).toLocaleString("ru-RU"); }
+  function band() { return BANDS[+$("band").value]; }
+
+  function pick() {
+    var r = Math.random(), acc = 0;
+    for (var i = 0; i < DROPS.length; i++) { acc += DROPS[i].p; if (r <= acc) return DROPS[i].title(); }
+    return DROPS[0].title();
+  }
+
+  function renderTaps() {
+    var html = "";
+    for (var i = 0; i < TAPS; i++) html += '<span class="dot' + (i < S.taps ? " on" : "") + '"></span>';
+    $("taps").innerHTML = html;
+  }
+
+  function render() {
+    var b = band(), ontime = $("ontime").checked;
+    $("coinsChip").textContent = fmt(S.coins) + " монет";
+    $("walletCoins").textContent = fmt(S.coins);
+    $("streakTxt").textContent = "Серия: " + S.streak + " дн.";
+    $("streakBar").style.width = Math.min(100, (S.streak % 7) / 7 * 100) + "%";
+    $("streakNote").textContent = S.streak > 0 && S.streak % 7 === 0 ? "Серия собрана: +1 шанс начислен!" : "Ещё " + (7 - (S.streak % 7)) + " дн. до бонусного шанса";
+    $("dayTheme").textContent = THEMES[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
+    $("chest").disabled = S.opened;
+    $("chestHint").textContent = S.opened ? "Сундук на сегодня открыт. Возвращайтесь завтра!" : "Нажмите на сундук " + TAPS + " раза";
+    renderTaps();
+    var cb = Math.round(b.fee * b.cb);
+    $("cashbackNote").textContent = ontime
+      ? "Кэшбэк за оплату вовремя: " + Math.round(b.cb * 1000) / 10 + "% → +" + fmt(cb) + " монет в месяц"
+      : "Оплата не вовремя: кэшбэк в этом месяце не начисляется. Оплатите до даты списания (+3 дня).";
+    var entries = ontime ? b.entries + Math.floor(S.streak / 7) + S.bonusEntries : 0;
+    $("myEntries").textContent = entries;
+    $("entriesNote").textContent = ontime
+      ? "Шансы растут вместе с тарифом. Перейдите на тариф от 60 тыс. — +10 шансов разово и кэшбэк 4%."
+      : "Чтобы участвовать в розыгрышах, оплатите абонплату вовремя — участие вернётся в следующем месяце.";
+    $("ladder").innerHTML = BANDS.slice(0, 4).map(function (x, i) {
+      return '<div class="' + (+$("band").value === i || (+$("band").value === 4 && i === 2) ? "me" : "") + '">' + x.name + "<br><b>" + x.entries + "</b> шанс.</div>";
+    }).join("");
+    var now = new Date(), d = (8 - now.getDay()) % 7 || 7;
+    $("countdown").textContent = "розыгрыш через " + d + " дн.";
+    var spend = [
+      { t: "Пакет 5 ГБ", c: 5000 }, { t: "Красивый номер (скидка)", c: 20000 },
+      { t: "До 30% следующей абонплаты", c: Math.round(b.fee * 0.3) }, { t: "Худи Ucell Club", c: 220000 }, { t: "Кепка", c: 85000 }
+    ];
+    $("spendList").innerHTML = spend.map(function (x, i) {
+      return "<li><span>" + x.t + '</span><button data-spend="' + i + '" data-cost="' + x.c + '"' + (S.coins < x.c ? " disabled" : "") + ">" + fmt(x.c) + "</button></li>";
+    }).join("");
+    $("partnerList").innerHTML = [["Кино: 2 билета по цене 1", "Чт"], ["Кофе −20%", "Ср"], ["Доставка еды −15%", "Ср"], ["Такси −10% на 3 поездки", "Ср"], ["Онлайн-кино: 1 мес. бесплатно", "Сб"]]
+      .map(function (x) { return "<li><span>" + x[0] + '</span><span class="chip">' + x[1] + "</span></li>"; }).join("");
+  }
+
+  $("chest").addEventListener("click", function () {
+    if (S.opened) return;
+    var el = $("chest"); el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+    S.taps += 1; renderTaps();
+    if (S.taps >= TAPS) {
+      var pr = pick();
+      S.opened = true; S.taps = 0; S.streak += 1;
+      if (pr.coins) S.coins += pr.coins;
+      if (pr.entry) S.bonusEntries += pr.entry;
+      $("prizeBox").innerHTML = "<span class='muted'>Ваш приз</span><b>" + pr.t + "</b>" + (pr.coupon ? "<span class='muted'>Код: UC-" + Math.random().toString(36).slice(2, 8).toUpperCase() + " · действует 72 ч</span>" : "");
+      $("prizeBox").classList.remove("hidden");
+      save(); render();
+    }
+  });
+  $("resetDay").addEventListener("click", function () { S.opened = false; S.taps = 0; $("prizeBox").classList.add("hidden"); save(); render(); });
+  $("band").addEventListener("change", render);
+  $("ontime").addEventListener("change", render);
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t && t.dataset && t.dataset.spend !== undefined) {
+      var c = +t.dataset.cost;
+      if (S.coins >= c) { S.coins -= c; $("spendMsg").textContent = "Готово: списано " + fmt(c) + " монет."; save(); render(); }
+    }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("nav button"), function (btn) {
+    btn.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll("nav button"), function (b) { b.setAttribute("aria-selected", "false"); });
+      btn.setAttribute("aria-selected", "true");
+      ["chest", "wallet", "wins", "partners"].forEach(function (t) { $("tab-" + t).classList.toggle("hidden", t !== btn.dataset.tab); });
+    });
+  });
+  load(); render();
+})();
+</script>
+</body>
+</html>
