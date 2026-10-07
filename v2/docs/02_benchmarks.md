@@ -38,6 +38,7 @@
 |---|---|---|
 | **Ucell** | Акция «+%» — **5% кэшбэка за пополнение в приложении** | Кэшбэк-привычка у абонентов уже есть. Новую программу нужно встроить, а не дублировать |
 | **Beeline UZ** | Beepul: баллы **BEEP** → пакеты связи и бесплатные переводы; 5% кэшбэк за оплату по QR (до 50 тыс. сум/мес.); семейный тариф Oila | Конкурент строит экосистему: финтех + связь |
+| **Beeline UZ — hambi fortuna** | Колесо в приложении: 3 бесплатные попытки + **платная «Fortuna Plus» 1 490 сум/попытка**; призы — смартфоны, ноутбуки, ГБ, лимиты P2P; организатор по правилам — ViaMobi. В 2020 году регулятор ставил под сомнение законность промо Beeline + ViaMobi без лицензии на лотереи | Спрос на платные «прокруты» есть, но это серая зона: см. разбор в [05](05_threshold_win_win.md) |
 | **Mobiuz** | Mobiuz Bonus: баллы за регистрацию, привязку карты, пополнение (50 баллов за 1 000 сум) → МБ. **MobiDRIVE:** 3 автомобиля BYD Song Plus, участвуют тарифы с АП **от 35 тыс. сум** (вход через USSD), розыгрыши в прямом эфире Instagram | **Конкурент уже использует порог по АП и эфирные розыгрыши авто.** Нам нужно сделать лучше: лестница шансов вместо стены и розыгрыш, связанный с поведением |
 | Рынок в целом | UzAuto предупреждала о фейковых «розыгрышах Chevrolet» | Доверие к розыгрышам — отдельная задача: нотариус, публичный seed, публикация победителей |
 
@@ -66,4 +67,5 @@
 - Цены Chevrolet: https://uz.kursiv.media/2026-04-07/skolko-stoyat-samye-populyarnye-avtomobili-v-uzbekistane-v-aprele-2026-goda/
 - Билеты в кино: https://www.afisha.uz/ru/cinema/2026/01/21/premier-cinema · мерч (DTF-печать): https://www.olx.uz/moda-i-stil/tashkent/q-футболки-с-принтом-на-заказ/
 - Фейковые розыгрыши: https://www.spot.uz/ru/2025/12/12/uzauto-fake/
+- Beeline hambi fortuna: https://beeline.uz/ru/events/actions/rozygrysh-v-hambi-fortuna · проверка промо Beeline/ViaMobi (2020): https://kun.uz/ru/news/2020/01/30/vyigryshnuyu-lotereyu-beeline-proveryat-na-predmet-zakonnosti · https://podrobno.uz/cat/obchestvo/aktsiya-kompanii-beeline-vyzvala-somneniya-v-zakonnosti-u-agentstva-po-razvitiyu-rynka-kapitala/
 - Переводы мигрантов: https://kun.uz/en/news/2026/03/17/remittances-to-uzbekistan-exceed-189-billion-tripling-in-five-years
