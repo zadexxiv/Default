@@ -1,4 +1,7 @@
-# Ucell Club — 3 слайда для утверждения идеи (Jobs-style)
+# Ucell Baraka (бывш. Ucell Club) — 3 слайда программы лояльности (Jobs-style)
+
+> Теперь это раздел 03 общей презентации — [ucell_arpu_deck.md](ucell_arpu_deck.md). Запрос на MVP на слайде 3
+> заменён на lean-версию: 211 млн сум, 20 000 + 20 000 контроль ([docs/17](../docs/17_lean_mvp.md)).
 
 Онлайн-версия (слайды + заметки докладчика): https://claude.ai/artifact/H8zYc2K45sNUYZJWGgpTx4 — приватная,
 доступ открывается через Share.
