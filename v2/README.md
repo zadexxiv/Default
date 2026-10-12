@@ -12,7 +12,7 @@
 | Инициативы | I1 Sunset / Migration (+10–15%) · I2 More-for-More · I3 бустер + роуминг-промо · I4 Loyalty (кэшбэк, Daily Drops, Weekly Wins, Monthly Grand) |
 | ΔARPU архивной когорты к M24 | **+9,1%** (P10–P90: +4,3…+12,1%); план +10,8% |
 | Вклад портфеля за 36 мес. | **89,6 млрд сум** |
-| Бюджет MVP Loyalty | **≈ 3,5 млрд сум (~$290 тыс.)** |
+| Бюджет MVP Loyalty | **≈ 3,5 млрд сум (~$290 тыс.)**; lean-версия своей командой, 20 000 + 20 000 контроль — **≈ 211 млн сум (~$17 тыс.)** ([17](docs/17_lean_mvp.md)) |
 | Loyalty при масштабе | ~1,5 млн участников, ~2,6 млрд сум/мес.; окупаемость ~2,5 года |
 | Порог участия | **O5:** играют все, кто платит вовремя; шансы растут с АП; Club+ Pass вместо платного входа |
 
@@ -37,6 +37,7 @@
 | 14 | [Кросс-функциональная команда и RACI](docs/14_raci_cross_department.md) |
 | 15 | [Питч и Q&A](docs/15_pitch_qa.md) |
 | 16 | [Открытые вопросы](docs/16_open_questions.md) |
+| 17 | [Lean MVP: своя разработка и доказательная выборка](docs/17_lean_mvp.md) |
 
 ## Модель
 
@@ -46,6 +47,7 @@
 | `model/model_v2.py` | Монте-Карло 20 000 × 36 мес.: инициативы, Loyalty, портфель, пороги, чувствительность |
 | `model/output/results_v2.md` | Результаты последнего прогона |
 | `model/Ucell_v2_ARPU_Loyalty_Model.xlsx` | Excel с живыми формулами: Inputs · Initiatives · Monthly_I · Loyalty_Inputs · Prizes · Daily_Drops · Loyalty_Monthly · MVP_Budget · Thresholds · Portfolio · AB_Calculator · MC_Results |
+| `model/lean_mvp.py` | Lean MVP: бюджет без внешней разработки по размерам группы + мощность тестов → `output/lean_mvp.md` |
 | `prototype/loyalty_mvp_prototype.html` | Кликабельный прототип экрана программы (для юзабилити-тестов на Discovery) |
 
 ```bash
